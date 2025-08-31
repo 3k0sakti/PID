@@ -2,7 +2,7 @@ Hands-On: Sensor Inventory MySQL dengan Docker
 
 ##  Langkah-Langkah Praktik
 
-### 1Persiapan Environment
+### 1. Persiapan Environment
 ```bash
 # Pastikan Docker sudah terinstall dan berjalan
 docker --version
