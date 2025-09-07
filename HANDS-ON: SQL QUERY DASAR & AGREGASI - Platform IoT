@@ -1,0 +1,170 @@
+Studi kasus: *Pengguna & Perangkat di Platform IoT*  
+Topik: `SELECT`, `JOIN`, `GROUP BY`, dan Analisis Data  
+Platform: **MySQL + phpMyAdmin (Docker)**  
+
+---
+
+## 1. STRUKTUR DATA
+
+### Tabel `pengguna_iot`
+Mewakili pengguna platform yang mendaftarkan perangkat IoT.
+
+| Kolom             | Tipe Data      | Keterangan                     |
+|-------------------|----------------|--------------------------------|
+| id_pengguna       | INT (PK)       | ID unik pengguna               |
+| nama_lengkap      | VARCHAR(100)   | Nama lengkap pengguna          |
+| email             | VARCHAR(100)   | Email pengguna                 |
+| kota_domisili     | VARCHAR(50)    | Kota asal                      |
+| tanggal_registrasi| DATE           | Tanggal daftar ke platform     |
+
+### Tabel `perangkat_iot`
+Mewakili perangkat IoT yang dimiliki dan didaftarkan oleh pengguna.
+
+| Kolom             | Tipe Data      | Keterangan                           |
+|-------------------|----------------|--------------------------------------|
+| id_perangkat      | INT (PK)       | ID unik perangkat                    |
+| nama_perangkat    | VARCHAR(50)    | Nama atau label perangkat            |
+| jenis             | VARCHAR(50)    | Jenis perangkat (Sensor, Aktuator)   |
+| status            | VARCHAR(20)    | Aktif / Tidak Aktif / Maintenance    |
+| tanggal_aktivasi  | DATE           | Tanggal perangkat mulai digunakan    |
+| id_pengguna       | INT (FK)       | Relasi ke `pengguna_iot`             |
+
+---
+
+## 2. INIT.SQL
+
+Tambahkan ke dalam `init/init.sql`:
+
+```sql
+USE inventory;
+
+CREATE TABLE pengguna_iot (
+    id_pengguna INT AUTO_INCREMENT PRIMARY KEY,
+    nama_lengkap VARCHAR(100),
+    email VARCHAR(100),
+    kota_domisili VARCHAR(50),
+    tanggal_registrasi DATE
+);
+
+CREATE TABLE perangkat_iot (
+    id_perangkat INT AUTO_INCREMENT PRIMARY KEY,
+    nama_perangkat VARCHAR(50),
+    jenis VARCHAR(50),
+    status VARCHAR(20),
+    tanggal_aktivasi DATE,
+    id_pengguna INT,
+    FOREIGN KEY (id_pengguna) REFERENCES pengguna_iot(id_pengguna)
+);
+
+INSERT INTO pengguna_iot (nama_lengkap, email, kota_domisili, tanggal_registrasi) VALUES
+('Rina Wijaya', 'rina@iotmail.com', 'Malang', '2023-01-12'),
+('Bayu Prasetyo', 'bayu@iotmail.com', 'Surabaya', '2023-02-20'),
+('Siti Lestari', 'siti@iotmail.com', 'Bandung', '2023-03-15'),
+('Andi Kurniawan', 'andi@iotmail.com', 'Yogyakarta', '2023-04-01');
+
+INSERT INTO perangkat_iot (nama_perangkat, jenis, status, tanggal_aktivasi, id_pengguna) VALUES
+('Sensor Suhu Ruangan', 'Sensor', 'Aktif', '2023-01-13', 1),
+('Kamera Pintu', 'Sensor', 'Tidak Aktif', '2023-02-21', 2),
+('Smart Plug', 'Aktuator', 'Aktif', '2023-03-18', 3),
+('Sensor Asap', 'Sensor', 'Maintenance', '2023-04-05', 1),
+('Lampu Otomatis', 'Aktuator', 'Aktif', '2023-05-10', 4);
+```
+
+---
+
+## 3. QUERY DASAR
+
+### A. SELECT
+```sql
+SELECT * FROM pengguna_iot;
+SELECT nama_lengkap, kota_domisili FROM pengguna_iot;
+```
+
+### B. WHERE
+```sql
+SELECT * FROM perangkat_iot WHERE status = 'Aktif';
+SELECT * FROM pengguna_iot WHERE kota_domisili = 'Bandung';
+```
+
+### C. ORDER BY
+```sql
+SELECT * FROM pengguna_iot ORDER BY tanggal_registrasi DESC;
+SELECT * FROM perangkat_iot ORDER BY tanggal_aktivasi;
+```
+
+---
+
+## 4. JOIN
+
+```sql
+SELECT 
+    p.nama_perangkat,
+    p.jenis,
+    p.status,
+    u.nama_lengkap,
+    u.kota_domisili
+FROM perangkat_iot p
+JOIN pengguna_iot u ON p.id_pengguna = u.id_pengguna;
+```
+
+```sql
+SELECT 
+    p.nama_perangkat,
+    u.nama_lengkap,
+    u.kota_domisili
+FROM perangkat_iot p
+JOIN pengguna_iot u ON p.id_pengguna = u.id_pengguna
+WHERE p.status = 'Aktif';
+```
+
+---
+
+## 5. AGREGASI
+
+### A. Total Pengguna
+```sql
+SELECT COUNT(*) AS total_pengguna FROM pengguna_iot;
+```
+
+### B. Jumlah perangkat per status
+```sql
+SELECT status, COUNT(*) AS jumlah FROM perangkat_iot GROUP BY status;
+```
+
+### C. Jumlah perangkat per jenis
+```sql
+SELECT jenis, COUNT(*) AS total_jenis FROM perangkat_iot GROUP BY jenis;
+```
+
+### D. Jumlah perangkat per kota pengguna
+```sql
+SELECT 
+    u.kota_domisili,
+    COUNT(p.id_perangkat) AS total_perangkat
+FROM pengguna_iot u
+LEFT JOIN perangkat_iot p ON u.id_pengguna = p.id_pengguna
+GROUP BY u.kota_domisili;
+```
+
+---
+
+##  6. TUGAS PRAKTIK
+
+###  Level 1 – Basic
+1. Tampilkan seluruh perangkat jenis *Sensor*
+2. Cari pengguna yang mendaftar setelah Maret 2023
+3. Urutkan perangkat berdasarkan status secara alfabetis
+
+### Level 2 – Intermediate
+1. Tampilkan jumlah perangkat tiap pengguna
+2. Hitung pengguna yang memiliki minimal 1 perangkat aktif
+3. Cari pengguna yang tidak memiliki perangkat
+
+### Level 3 – Advanced
+1. Buat `VIEW` bernama `view_perangkat_aktif` berisi perangkat aktif dan pemiliknya
+2. Tambahkan `INDEX` pada `status` dan `kota_domisili`
+3. Buat `STORED PROCEDURE` bernama `tambah_perangkat_iot(...)`
+
+---
+
+
