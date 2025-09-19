@@ -261,6 +261,8 @@ if __name__ == "__main__":
 
 ### 2.2 Install Dependencies dan Jalankan Generator
 
+https://pip.pypa.io/en/stable/installation/
+
 ```bash
 # Install pymongo
 pip install pymongo
