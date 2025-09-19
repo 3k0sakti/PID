@@ -138,6 +138,7 @@ docker exec -it mongodb-iot mongosh --eval "db.adminCommand('ping')"
 
 # Akses Mongo Express di browser
 # Buka http://localhost:8081
+# Kredensial = admin:pass
 # Anda akan melihat database iot_db dengan collections yang sudah dibuat
 ```
 
