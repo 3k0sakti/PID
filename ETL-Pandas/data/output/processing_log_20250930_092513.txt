@@ -1,0 +1,22 @@
+[2025-09-30 09:25:11] 🚀 Starting ETL Pipeline...
+[2025-09-30 09:25:11] 🔄 Starting data extraction...
+[2025-09-30 09:25:11] ✅ CSV loaded: 14472 rows
+[2025-09-30 09:25:12] ✅ Excel loaded: 2 sheets
+[2025-09-30 09:25:12] 📊 Combined dataset: (28944, 8)
+[2025-09-30 09:25:12] 🔧 Starting data transformation...
+[2025-09-30 09:25:12] 🔁 Removed 130 duplicate records
+[2025-09-30 09:25:12] 📝 Column names standardized
+[2025-09-30 09:25:12] 📅 Time features engineered
+[2025-09-30 09:25:13] 🔧 Feature engineering completed
+[2025-09-30 09:25:13] 🔍 Handled 2586 missing values
+[2025-09-30 09:25:13] 📊 Normalized 4 numeric columns
+[2025-09-30 09:25:13] ✅ Transformation completed: (28814, 25)
+[2025-09-30 09:25:13] 📊 Creating data aggregations...
+[2025-09-30 09:25:13] ⏰ Hourly aggregation: 1440 records
+[2025-09-30 09:25:13] 📅 Daily aggregation: 60 records
+[2025-09-30 09:25:13] 🗺️ Location aggregation: 10 records
+[2025-09-30 09:25:13] 💾 Starting data loading...
+[2025-09-30 09:25:13] 📄 CSV exported: data/output/processed_sensor_data_20250930_092513.csv
+[2025-09-30 09:25:20] 📊 Excel exported: data/output/sensor_analysis_20250930_092513.xlsx
+[2025-09-30 09:25:20] 🔗 JSON exported: data/output/processed_sensor_data_20250930_092513.json
+[2025-09-30 09:25:21] 🗜️ Parquet exported: data/output/processed_sensor_data_20250930_092513.parquet
