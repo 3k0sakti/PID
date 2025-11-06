@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Game Manager - Select Games to Monitor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; }
+      body { 
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial; 
+        margin: 0; 
+        background: linear-gradient(135deg, #1b2838 0%, #2a475e 100%);
+        color: #c7d5e0;
+        min-height: 100vh;
+      }
+      header { 
+        padding: 20px 30px; 
+        border-bottom: 2px solid #1e3a52;
+        background: rgba(27, 40, 56, 0.95);
+        position: sticky; 
+        top: 0;
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      }
+      h1 { 
+        font-size: 24px; 
+        margin: 0; 
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      nav {
+        margin-top: 15px;
+        display: flex;
+        gap: 15px;
+      }
+      nav a {
+        color: #66c0f4;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        background: rgba(102, 192, 244, 0.1);
+        transition: all 0.3s;
+        font-weight: 600;
+      }
+      nav a:hover {
+        background: rgba(102, 192, 244, 0.2);
+        transform: translateY(-2px);
+      }
+      nav a.active {
+        background: #66c0f4;
+        color: #1b2838;
+      }
+      main { 
+        padding: 30px; 
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      .page-header {
+        margin-bottom: 30px;
+      }
+      .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 10px;
+      }
+      .page-subtitle {
+        color: #8f98a0;
+        font-size: 16px;
+      }
+      .controls {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .search-box {
+        flex: 1;
+        min-width: 300px;
+      }
+      .search-box input {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(22, 34, 48, 0.9);
+        border: 1px solid #2a475e;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 14px;
+      }
+      .search-box input:focus {
+        outline: none;
+        border-color: #66c0f4;
+      }
+      .filter-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .filter-btn {
+        padding: 10px 16px;
+        background: rgba(22, 34, 48, 0.9);
+        border: 1px solid #2a475e;
+        border-radius: 8px;
+        color: #8f98a0;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .filter-btn:hover {
+        border-color: #66c0f4;
+        color: #66c0f4;
+      }
+      .filter-btn.active {
+        background: #66c0f4;
+        border-color: #66c0f4;
+        color: #1b2838;
+      }
+      .action-bar {
+        background: rgba(22, 34, 48, 0.9);
+        border: 1px solid #2a475e;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      .selection-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .selection-count {
+        font-size: 18px;
+        font-weight: 700;
+        color: #66c0f4;
+      }
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-primary {
+        background: #5c7e10;
+        color: #beee11;
+      }
+      .btn-primary:hover {
+        background: #6a9313;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(92, 126, 16, 0.4);
+      }
+      .btn-primary:disabled {
+        background: #3a4e0a;
+        color: #7a9a0f;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-secondary {
+        background: rgba(102, 192, 244, 0.2);
+        color: #66c0f4;
+        border: 1px solid #66c0f4;
+      }
+      .btn-secondary:hover {
+        background: rgba(102, 192, 244, 0.3);
+      }
+      .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+      }
+      .game-item {
+        background: rgba(22, 34, 48, 0.9);
+        border: 2px solid #2a475e;
+        border-radius: 12px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+      }
+      .game-item:hover {
+        border-color: #66c0f4;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      }
+      .game-item.selected {
+        border-color: #5c7e10;
+        background: rgba(92, 126, 16, 0.15);
+      }
+      .game-item.selected::before {
+        content: '✓';
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        background: #5c7e10;
+        color: #beee11;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+      }
+      .game-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 0 8px 0;
+      }
+      .game-id {
+        color: #66c0f4;
+        font-size: 13px;
+        font-family: monospace;
+      }
+      .game-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .tag {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .tag-category {
+        background: rgba(102, 192, 244, 0.2);
+        color: #66c0f4;
+      }
+      .tag-genre {
+        background: rgba(190, 238, 17, 0.2);
+        color: #beee11;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #8f98a0;
+      }
+      .empty-state h3 {
+        color: #fff;
+        margin-bottom: 10px;
+      }
+      .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: #8f98a0;
+        font-size: 16px;
+      }
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #5c7e10;
+        color: #beee11;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        display: none;
+        align-items: center;
+        gap: 12px;
+        z-index: 2000;
+        animation: slideIn 0.3s ease;
+      }
+      .notification.show {
+        display: flex;
+      }
+      .notification.error {
+        background: #8b2e2e;
+        color: #ffb3b3;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      footer {
+        padding: 20px 30px;
+        color: #8f98a0;
+        font-size: 13px;
+        border-top: 1px solid #1e3a52;
+        text-align: center;
+        background: rgba(27, 40, 56, 0.7);
+        margin-top: 40px;
+      }
+      .stats-inline {
+        display: flex;
+        gap: 20px;
+        color: #8f98a0;
+        font-size: 14px;
+      }
+      .stat-inline {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .stat-inline strong {
+        color: #66c0f4;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🎮 Game Manager</h1>
+      <nav>
+        <a href="/steam">Steam Games</a>
+        <a href="/games" class="active">Game Manager</a>
+      </nav>
+    </header>
+    
+    <main>
+      <div class="page-header">
+        <h2 class="page-title">Select Games to Monitor</h2>
+        <p class="page-subtitle">Choose which games you want to track for price changes and discounts</p>
+      </div>
+
+      <div class="controls">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="🔍 Search games by name...">
+        </div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="Free to Play">Free to Play</button>
+          <button class="filter-btn" data-filter="AAA">AAA</button>
+          <button class="filter-btn" data-filter="Indie">Indie</button>
+          <button class="filter-btn" data-filter="Survival">Survival</button>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <div class="selection-info">
+          <div class="selection-count">
+            <span id="selectedCount">0</span> / <span id="totalCount">0</span> selected
+          </div>
+          <div class="stats-inline">
+            <div class="stat-inline">
+              <span>Currently monitoring:</span>
+              <strong id="currentMonitoring">0</strong>
+            </div>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="selectAll()">Select All Visible</button>
+          <button class="btn btn-secondary" onclick="clearSelection()">Clear Selection</button>
+          <button class="btn btn-primary" id="saveBtn" onclick="saveWatchlist()">
+            💾 Save Watchlist
+          </button>
+        </div>
+      </div>
+
+      <div class="games-grid" id="gamesGrid">
+        <div class="loading">Loading available games...</div>
+      </div>
+    </main>
+
+    <footer>
+      Game Manager • Steam Monitor • Click on games to add/remove from watchlist
+    </footer>
+
+    <div class="notification" id="notification">
+      <span id="notificationText"></span>
+    </div>
+
+    <script>
+      let allGames = [];
+      let selectedGames = new Set();
+      let currentFilter = 'all';
+      let currentSearch = '';
+      let originalWatchlist = new Set();
+
+      async function loadData() {
+        try {
+          const [availableRes, watchlistRes] = await Promise.all([
+            fetch('/api/games/available'),
+            fetch('/api/games/watchlist')
+          ]);
+
+          const availableData = await availableRes.json();
+          const watchlistData = await watchlistRes.json();
+
+          allGames = availableData.games || [];
+          
+          // Load current watchlist
+          if (watchlistData.games) {
+            watchlistData.games.forEach(id => {
+              selectedGames.add(id);
+              originalWatchlist.add(id);
+            });
+          }
+
+          document.getElementById('currentMonitoring').textContent = originalWatchlist.size;
+          document.getElementById('totalCount').textContent = allGames.length;
+
+          renderGames();
+          updateSelectedCount();
+
+        } catch (error) {
+          console.error('Error loading data:', error);
+          showNotification('Failed to load games', 'error');
+        }
+      }
+
+      function renderGames() {
+        const container = document.getElementById('gamesGrid');
+        
+        // Filter games
+        let filtered = allGames.filter(game => {
+          const matchesFilter = currentFilter === 'all' || game.category === currentFilter;
+          const matchesSearch = currentSearch === '' || 
+                               game.name.toLowerCase().includes(currentSearch.toLowerCase());
+          return matchesFilter && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h3>No games found</h3>
+              <p>Try adjusting your search or filter</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filtered.map(game => {
+          const isSelected = selectedGames.has(game.app_id);
+          return `
+            <div class="game-item ${isSelected ? 'selected' : ''}" onclick="toggleGame(${game.app_id})">
+              <div class="game-header">
+                <div>
+                  <h3 class="game-name">${game.name}</h3>
+                  <div class="game-id">App ID: ${game.app_id}</div>
+                </div>
+              </div>
+              <div class="game-meta">
+                <span class="tag tag-category">${game.category}</span>
+                <span class="tag tag-genre">${game.genre}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function toggleGame(appId) {
+        if (selectedGames.has(appId)) {
+          selectedGames.delete(appId);
+        } else {
+          selectedGames.add(appId);
+        }
+        renderGames();
+        updateSelectedCount();
+      }
+
+      function updateSelectedCount() {
+        document.getElementById('selectedCount').textContent = selectedGames.size;
+        
+        // Enable/disable save button
+        const saveBtn = document.getElementById('saveBtn');
+        const hasChanges = !setsEqual(selectedGames, originalWatchlist);
+        saveBtn.disabled = !hasChanges;
+      }
+
+      function setsEqual(a, b) {
+        if (a.size !== b.size) return false;
+        for (let item of a) {
+          if (!b.has(item)) return false;
+        }
+        return true;
+      }
+
+      function selectAll() {
+        // Get currently visible games
+        const filtered = allGames.filter(game => {
+          const matchesFilter = currentFilter === 'all' || game.category === currentFilter;
+          const matchesSearch = currentSearch === '' || 
+                               game.name.toLowerCase().includes(currentSearch.toLowerCase());
+          return matchesFilter && matchesSearch;
+        });
+
+        filtered.forEach(game => selectedGames.add(game.app_id));
+        renderGames();
+        updateSelectedCount();
+      }
+
+      function clearSelection() {
+        selectedGames.clear();
+        renderGames();
+        updateSelectedCount();
+      }
+
+      async function saveWatchlist() {
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = '💾 Saving...';
+
+        try {
+          const watchlistData = {
+            description: "Steam games watchlist - Managed via Game Manager",
+            games: Array.from(selectedGames).sort((a, b) => a - b),
+            game_info: {}
+          };
+
+          // Add game info
+          allGames.forEach(game => {
+            if (selectedGames.has(game.app_id)) {
+              watchlistData.game_info[game.app_id] = game.name;
+            }
+          });
+
+          const response = await fetch('/api/games/watchlist', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(watchlistData)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            originalWatchlist = new Set(selectedGames);
+            document.getElementById('currentMonitoring').textContent = originalWatchlist.size;
+            showNotification(`✅ Watchlist saved! Now monitoring ${selectedGames.size} games.`, 'success');
+            updateSelectedCount();
+          } else {
+            showNotification('❌ Failed to save: ' + result.error, 'error');
+          }
+
+        } catch (error) {
+          console.error('Error saving watchlist:', error);
+          showNotification('❌ Failed to save watchlist', 'error');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '💾 Save Watchlist';
+        }
+      }
+
+      function showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        const text = document.getElementById('notificationText');
+        
+        text.textContent = message;
+        notification.className = 'notification show' + (type === 'error' ? ' error' : '');
+        
+        setTimeout(() => {
+          notification.classList.remove('show');
+        }, 4000);
+      }
+
+      // Search functionality
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        currentSearch = e.target.value;
+        renderGames();
+      });
+
+      // Filter functionality
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          currentFilter = e.target.dataset.filter;
+          renderGames();
+        });
+      });
+
+      // Load data on page load
+      loadData();
+    </script>
+  </body>
+</html>

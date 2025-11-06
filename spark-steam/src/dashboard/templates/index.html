@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IoT Metrics Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+    <style>
+      body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; background: #0b1020; color: #e8ecf1; }
+      header { padding: 16px 24px; border-bottom: 1px solid #20263a; background: #0f1530; position: sticky; top: 0; }
+      h1 { font-size: 18px; margin: 0; }
+      main { padding: 24px; display: grid; grid-template-columns: 1fr; gap: 24px; }
+      .card { background: #11182f; border: 1px solid #1e2743; border-radius: 12px; padding: 16px; }
+      .row { display: flex; gap: 16px; flex-wrap: wrap; }
+      .metric { flex: 1 1 200px; background: #0e1430; border: 1px solid #222b48; border-radius: 10px; padding: 12px; }
+      .label { color: #9fb0d3; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+      .value { font-size: 24px; font-weight: 700; }
+      .muted { color: #90a2c7; }
+      canvas { background: transparent; }
+      a { color: #7ab7ff; text-decoration: none; }
+      footer { padding: 16px 24px; color: #90a2c7; font-size: 12px; border-top: 1px solid #20263a; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>IoT Metrics • Kafka → Spark → Dashboard</h1>
+      <nav style="margin-top: 15px; display: flex; gap: 15px;">
+        <a href="/" style="color: #7ab7ff; text-decoration: none; padding: 8px 16px; border-radius: 4px; background: rgba(122, 183, 255, 0.1);">IoT Dashboard</a>
+        <a href="/steam" style="color: #7ab7ff; text-decoration: none; padding: 8px 16px; border-radius: 4px; background: rgba(122, 183, 255, 0.1);">Steam Games</a>
+        <a href="/games" style="color: #7ab7ff; text-decoration: none; padding: 8px 16px; border-radius: 4px; background: rgba(122, 183, 255, 0.1);">Game Manager</a>
+      </nav>
+    </header>
+    <main>
+      <section class="row">
+        <div class="metric">
+          <div class="label">Last Window</div>
+          <div id="windowRange" class="value">—</div>
+          <div class="muted" id="updatedAt">waiting for data…</div>
+        </div>
+        <div class="metric">
+          <div class="label">Devices</div>
+          <div id="deviceCount" class="value">0</div>
+          <div class="muted">active in current window</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3 style="margin-top:0">Avg Temperature by Device (°C)</h3>
+        <canvas id="tempChart" height="120"></canvas>
+      </section>
+
+      <section class="card">
+        <h3 style="margin-top:0">Avg Humidity by Device (%)</h3>
+        <canvas id="humChart" height="120"></canvas>
+      </section>
+    </main>
+    <footer>
+      Built with native Python: kafka-python, PySpark, Flask. Edit pipeline in <code>src/</code>.
+    </footer>
+
+    <script>
+      const fmtTime = (s) => new Date(s).toLocaleTimeString();
+      const byDevice = (records) => {
+        const latestWindowStart = records.length ? records[0].window_start : null;
+        const sameWindow = records.filter(r => r.window_start === latestWindowStart);
+        // group by device
+        const map = new Map();
+        sameWindow.forEach(r => map.set(r.device_id, r));
+        return [...map.entries()].sort((a,b)=> a[0].localeCompare(b[0]));
+      };
+
+      const tempCtx = document.getElementById('tempChart');
+      const humCtx = document.getElementById('humChart');
+      let tempChart = new Chart(tempCtx, {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Avg Temp (°C)', data: [], backgroundColor: '#4da3ff' }] },
+        options: { scales: { y: { beginAtZero: true } }, animation: false }
+      });
+      let humChart = new Chart(humCtx, {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Avg Humidity (%)', data: [], backgroundColor: '#6be1c4' }] },
+        options: { scales: { y: { beginAtZero: true } }, animation: false }
+      });
+
+      async function refresh() {
+        try {
+          const res = await fetch('/metrics');
+          const data = await res.json();
+          const recs = data.records || [];
+          if (!recs.length) return;
+
+          const items = byDevice(recs);
+          const labels = items.map(([d]) => d);
+          const temps = items.map(([_, r]) => r.avg_temperature);
+          const hums = items.map(([_, r]) => r.avg_humidity);
+
+          tempChart.data.labels = labels; tempChart.data.datasets[0].data = temps; tempChart.update();
+          humChart.data.labels = labels; humChart.data.datasets[0].data = hums; humChart.update();
+
+          const w0 = items.length ? items[0][1] : null;
+          if (w0) {
+            document.getElementById('windowRange').textContent = new Date(w0.window_start).toLocaleTimeString() + ' → ' + new Date(w0.window_end).toLocaleTimeString();
+          }
+          document.getElementById('deviceCount').textContent = labels.length;
+          if (data.updated_at) {
+            const dt = new Date(data.updated_at * 1000);
+            document.getElementById('updatedAt').textContent = 'updated ' + dt.toLocaleTimeString();
+          }
+        } catch (e) {
+          console.debug('refresh error', e);
+        }
+      }
+
+      setInterval(refresh, 2000);
+      refresh();
+    </script>
+  </body>
+</html>

@@ -76,7 +76,9 @@ You should see the dashboard update every ~2s with average temperature and humid
 
 ## Configs
 - Kafka topic: `iot-metrics` (auto-created)
-- Kafka bootstrap: `localhost:9092` (outside Docker) / `kafka:9092` (inside Docker)
+- Kafka bootstrap: 
+  - `localhost:9092` (from host machine - Python producer/consumer)
+  - `kafka:29092` (from inside Docker - Kafka UI)
 - Window: 10 seconds, watermark: 1 minute
 
 Env overrides:

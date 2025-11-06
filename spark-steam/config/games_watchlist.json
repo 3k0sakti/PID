@@ -1,0 +1,11 @@
+{
+  "description": "Steam games watchlist - Managed via Game Manager",
+  "games": [
+    570,
+    578080
+  ],
+  "game_info": {
+    "570": "Dota 2",
+    "578080": "PUBG: Battlegrounds"
+  }
+}

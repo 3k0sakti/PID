@@ -1,0 +1,94 @@
+{
+  "updated_at": 1762387938,
+  "game_count": 2,
+  "games": [
+    {
+      "app_id": 570,
+      "name": "Dota 2",
+      "type": "game",
+      "timestamp": 1762387934110,
+      "event_time": "2025-11-06T00:12:14.110584+00:00",
+      "is_free": true,
+      "initial_price": 0,
+      "final_price": 0,
+      "discount_percent": 0,
+      "on_sale": false,
+      "currency": "USD",
+      "metacritic_score": 90,
+      "total_recommendations": 14360,
+      "dlc_count": 2,
+      "has_dlc": true,
+      "genres": [
+        "Action",
+        "Strategy",
+        "Free To Play"
+      ],
+      "categories": [
+        "Multi-player",
+        "Co-op",
+        "Steam Trading Cards",
+        "Steam Workshop",
+        "SteamVR Collectibles",
+        "In-App Purchases",
+        "Camera Comfort",
+        "Color Alternatives",
+        "Custom Volume Controls",
+        "Valve Anti-Cheat enabled",
+        "Steam Timeline"
+      ],
+      "release_date": "Jul 9, 2013",
+      "is_coming_soon": false,
+      "current_players": 401101,
+      "short_description": "Every day, millions of players worldwide enter battle as one of over a hundred Dota heroes. And no matter if it's their 10th hour of play or 1,000th, there's always something new to discover. With reg",
+      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/header.jpg?t=1757000652",
+      "developers": [
+        "Valve"
+      ],
+      "publishers": [
+        "Valve"
+      ]
+    },
+    {
+      "app_id": 578080,
+      "name": "PUBG: BATTLEGROUNDS",
+      "type": "game",
+      "timestamp": 1762387936496,
+      "event_time": "2025-11-06T00:12:16.496298+00:00",
+      "is_free": true,
+      "initial_price": 0,
+      "final_price": 0,
+      "discount_percent": 0,
+      "on_sale": false,
+      "currency": "USD",
+      "metacritic_score": null,
+      "total_recommendations": 1750652,
+      "dlc_count": 0,
+      "has_dlc": false,
+      "genres": [
+        "Action",
+        "Adventure",
+        "Massively Multiplayer",
+        "Free To Play"
+      ],
+      "categories": [
+        "Multi-player",
+        "PvP",
+        "Online PvP",
+        "Stats",
+        "Remote Play on Phone",
+        "Remote Play on Tablet"
+      ],
+      "release_date": "Dec 21, 2017",
+      "is_coming_soon": false,
+      "current_players": 85137,
+      "short_description": "PUBG: BATTLEGROUNDS, the high-stakes winner-take-all shooter that started the Battle Royale craze, is free-to-play! Drop into diverse maps, loot unique weapons and supplies, and survive in an ever-shr",
+      "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/578080/841ea38bc58cabb70aef65365cf50bc2d79329d9/header.jpg?t=1758255634",
+      "developers": [
+        "PUBG Corporation"
+      ],
+      "publishers": [
+        "KRAFTON, Inc."
+      ]
+    }
+  ]
+}
