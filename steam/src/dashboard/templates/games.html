@@ -345,7 +345,7 @@
 
       <div class="controls">
         <div class="search-box">
-          <input type="text" id="searchInput" placeholder="🔍 Search games by name...">
+          <input type="text" id="searchInput" placeholder="🔍 Search games by name... (type 3+ chars for online search)">
         </div>
         <div class="filter-buttons">
           <button class="filter-btn active" data-filter="all">All</button>
@@ -376,6 +376,11 @@
           </button>
         </div>
       </div>
+
+      <section id="searchSection" style="display:none; margin-bottom: 24px;">
+        <h3 class="page-title" style="font-size:20px">Steam Search Results</h3>
+        <div class="games-grid" id="searchGrid"></div>
+      </section>
 
       <div class="games-grid" id="gamesGrid">
         <div class="loading">Loading available games...</div>
@@ -575,10 +580,54 @@
         }, 4000);
       }
 
+      // Debounced online search
+      let searchTimer = null;
+      async function onlineSearch(q) {
+        const section = document.getElementById('searchSection');
+        const grid = document.getElementById('searchGrid');
+        if (q.length < 3) {
+          section.style.display = 'none';
+          grid.innerHTML = '';
+          return;
+        }
+        section.style.display = 'block';
+        grid.innerHTML = '<div class="loading">Searching Steam…</div>';
+        try {
+          const res = await fetch(`/api/steam/search?q=${encodeURIComponent(q)}&limit=100`);
+          const data = await res.json();
+          const results = data.results || [];
+          if (!results.length) {
+            grid.innerHTML = '<div class="empty-state">No results</div>';
+            return;
+          }
+          grid.innerHTML = results.map(game => {
+            const isSelected = selectedGames.has(game.app_id);
+            return `
+              <div class="game-item ${isSelected ? 'selected' : ''}" onclick="toggleGame(${game.app_id})">
+                <div class="game-header">
+                  <div>
+                    <h3 class="game-name">${game.name}</h3>
+                    <div class="game-id">App ID: ${game.app_id}</div>
+                  </div>
+                </div>
+                <div class="game-meta">
+                  <span class="tag tag-category">${game.category || 'Steam'}</span>
+                  <span class="tag tag-genre">${game.genre || 'Game'}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } catch (err) {
+          grid.innerHTML = '<div class="empty-state">Search failed</div>';
+        }
+      }
+
       // Search functionality
       document.getElementById('searchInput').addEventListener('input', (e) => {
         currentSearch = e.target.value;
         renderGames();
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => onlineSearch(currentSearch), 350);
       });
 
       // Filter functionality

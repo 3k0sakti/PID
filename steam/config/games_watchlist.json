@@ -1,11 +1,12 @@
 {
   "description": "Steam games watchlist - Managed via Game Manager",
   "games": [
-    570,
-    578080
+    730,
+    292030,
+    2807960
   ],
   "game_info": {
-    "570": "Dota 2",
-    "578080": "PUBG: Battlegrounds"
+    "730": "Counter-Strike 2",
+    "292030": "The Witcher 3"
   }
 }

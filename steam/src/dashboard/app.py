@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from flask import Flask, jsonify, render_template, redirect
+import requests
 
 ROOT = Path(__file__).resolve().parent
 
@@ -127,6 +128,75 @@ def create_app() -> Flask:
             return jsonify({"success": True, "message": "Watchlist updated"})
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
+
+    @app.delete("/api/games/watchlist/<int:app_id>")
+    def remove_from_watchlist(app_id: int):
+        """Remove a single game from the watchlist by app_id"""
+        try:
+            # Load current watchlist (create empty structure if missing)
+            if WATCHLIST_FILE.exists():
+                with open(WATCHLIST_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            else:
+                data = {"description": "Steam games watchlist", "games": [], "game_info": {}}
+
+            games = set(data.get("games", []))
+            info = data.get("game_info", {})
+
+            if app_id not in games:
+                return jsonify({"success": False, "error": "Game not in watchlist"}), 404
+
+            # Remove
+            games.discard(app_id)
+            if str(app_id) in info:
+                info.pop(str(app_id), None)
+            if app_id in info:
+                info.pop(app_id, None)
+
+            # Persist
+            CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+            with open(WATCHLIST_FILE, "w", encoding="utf-8") as f:
+                json.dump({
+                    "description": data.get("description", "Steam games watchlist"),
+                    "games": sorted(list(games)),
+                    "game_info": info,
+                }, f, indent=2)
+
+            return jsonify({"success": True, "message": f"Removed {app_id} from watchlist"})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+
+    @app.get("/api/steam/search")
+    def steam_search():
+        """Search Steam store for apps by name (server-side helper for UI)"""
+        from flask import request
+        q = request.args.get("q", "").strip()
+        limit = int(request.args.get("limit", "50"))
+        if not q or len(q) < 2:
+            return jsonify({"success": True, "count": 0, "results": []})
+        try:
+            url = "https://store.steampowered.com/api/storesearch"
+            params = {"term": q, "cc": "us", "l": "english"}
+            r = requests.get(url, params=params, timeout=10)
+            r.raise_for_status()
+            data = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
+            items = data.get("items", [])
+            results = []
+            for it in items[:limit]:
+                # Normalize fields we use in Game Manager
+                app_id = it.get("id") or it.get("appid")
+                name = it.get("name")
+                if not app_id or not name:
+                    continue
+                results.append({
+                    "app_id": app_id,
+                    "name": name,
+                    "category": "Steam",
+                    "genre": (it.get("type") or "Game"),
+                })
+            return jsonify({"success": True, "count": len(results), "results": results})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e), "results": []}), 500
 
     return app
 

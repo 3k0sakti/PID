@@ -255,6 +255,16 @@
     </header>
     
     <main>
+      <!-- Monitored Games (Watchlist) -->
+      <section>
+        <div class="section-title">🧿 Monitored Games
+          <span style="margin-left:10px; font-size: 13px; color:#8f98a0; font-weight:600">(Manage additions in Game Manager)</span>
+        </div>
+        <div id="watchlist" class="games-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+          <div class="loading">Loading watchlist…</div>
+        </div>
+      </section>
+
       <!-- Summary Stats -->
       <div class="stats-grid">
         <div class="stat-card">
@@ -387,6 +397,58 @@
         }
       }
 
+      async function fetchWatchlist() {
+        const container = document.getElementById('watchlist');
+        container.innerHTML = '<div class="loading">Loading watchlist…</div>';
+        try {
+          const res = await fetch('/api/games/watchlist');
+          const data = await res.json();
+          const ids = (data.games || []).map(Number);
+          const info = data.game_info || {};
+
+          if (!ids.length) {
+            container.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1"><h3>No monitored games</h3><p>Add games from the <a href="/games">Game Manager</a></p></div>';
+            return;
+          }
+
+          // Build simple cards with remove buttons
+          container.innerHTML = ids.map(id => {
+            const name = info[id] || info[String(id)] || `App ${id}`;
+            return `
+              <div class="game-card" style="padding:16px">
+                <div class="game-content" style="padding:0">
+                  <h3 class="game-title" style="margin-bottom:8px">
+                    <a href="https://store.steampowered.com/app/${id}" target="_blank">${name}</a>
+                  </h3>
+                  <div style="display:flex; gap:10px; align-items:center; justify-content:space-between">
+                    <span class="meta-tag">App ID: ${id}</span>
+                    <button class="btn-remove" onclick="removeMonitored(${id})" style="cursor:pointer; background:#8b2e2e; color:#ffb3b3; border:1px solid #b24a4a; padding:6px 10px; border-radius:6px; font-weight:700">Remove</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } catch (e) {
+          console.error('Failed to load watchlist', e);
+          container.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1">Failed to load watchlist</div>';
+        }
+      }
+
+      async function removeMonitored(appId) {
+        if (!confirm('Remove this game from the watchlist?')) return;
+        try {
+          const res = await fetch(`/api/games/watchlist/${appId}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (result.success) {
+            await Promise.all([fetchWatchlist(), fetchData()]);
+          } else {
+            alert('Failed to remove: ' + (result.error || 'unknown error'));
+          }
+        } catch (e) {
+          alert('Failed to remove game');
+        }
+      }
+
       function updateStats(games, players, discounts) {
         document.getElementById('gameCount').textContent = games.game_count || 0;
         document.getElementById('lastUpdate').textContent = games.updated_at 
@@ -489,9 +551,10 @@
 
       // Initial load
       fetchData();
+      fetchWatchlist();
 
       // Auto-refresh every 30 seconds
-      setInterval(fetchData, 30000);
+      setInterval(() => { fetchData(); fetchWatchlist(); }, 30000);
     </script>
   </body>
 </html>

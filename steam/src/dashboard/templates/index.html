@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>IoT Metrics Dashboard</title>
+  <title>Steam Dashboard Redirect</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -26,96 +26,23 @@
   </head>
   <body>
     <header>
-      <h1>IoT Metrics • Kafka → Spark → Dashboard</h1>
+      <h1>Redirecting to Steam Dashboard…</h1>
       <nav style="margin-top: 15px; display: flex; gap: 15px;">
-        <a href="/" style="color: #7ab7ff; text-decoration: none; padding: 8px 16px; border-radius: 4px; background: rgba(122, 183, 255, 0.1);">IoT Dashboard</a>
         <a href="/steam" style="color: #7ab7ff; text-decoration: none; padding: 8px 16px; border-radius: 4px; background: rgba(122, 183, 255, 0.1);">Steam Games</a>
         <a href="/games" style="color: #7ab7ff; text-decoration: none; padding: 8px 16px; border-radius: 4px; background: rgba(122, 183, 255, 0.1);">Game Manager</a>
       </nav>
     </header>
     <main>
-      <section class="row">
-        <div class="metric">
-          <div class="label">Last Window</div>
-          <div id="windowRange" class="value">—</div>
-          <div class="muted" id="updatedAt">waiting for data…</div>
-        </div>
-        <div class="metric">
-          <div class="label">Devices</div>
-          <div id="deviceCount" class="value">0</div>
-          <div class="muted">active in current window</div>
-        </div>
-      </section>
-
       <section class="card">
-        <h3 style="margin-top:0">Avg Temperature by Device (°C)</h3>
-        <canvas id="tempChart" height="120"></canvas>
-      </section>
-
-      <section class="card">
-        <h3 style="margin-top:0">Avg Humidity by Device (%)</h3>
-        <canvas id="humChart" height="120"></canvas>
+        <h3 style="margin-top:0">Taking you to Steam Games…</h3>
+        <p class="muted">If you are not redirected automatically, <a href="/steam">click here</a>.</p>
       </section>
     </main>
     <footer>
-      Built with native Python: kafka-python, PySpark, Flask. Edit pipeline in <code>src/</code>.
+      Steam Dashboard • Flask app
     </footer>
 
-    <script>
-      const fmtTime = (s) => new Date(s).toLocaleTimeString();
-      const byDevice = (records) => {
-        const latestWindowStart = records.length ? records[0].window_start : null;
-        const sameWindow = records.filter(r => r.window_start === latestWindowStart);
-        // group by device
-        const map = new Map();
-        sameWindow.forEach(r => map.set(r.device_id, r));
-        return [...map.entries()].sort((a,b)=> a[0].localeCompare(b[0]));
-      };
-
-      const tempCtx = document.getElementById('tempChart');
-      const humCtx = document.getElementById('humChart');
-      let tempChart = new Chart(tempCtx, {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Avg Temp (°C)', data: [], backgroundColor: '#4da3ff' }] },
-        options: { scales: { y: { beginAtZero: true } }, animation: false }
-      });
-      let humChart = new Chart(humCtx, {
-        type: 'bar',
-        data: { labels: [], datasets: [{ label: 'Avg Humidity (%)', data: [], backgroundColor: '#6be1c4' }] },
-        options: { scales: { y: { beginAtZero: true } }, animation: false }
-      });
-
-      async function refresh() {
-        try {
-          const res = await fetch('/metrics');
-          const data = await res.json();
-          const recs = data.records || [];
-          if (!recs.length) return;
-
-          const items = byDevice(recs);
-          const labels = items.map(([d]) => d);
-          const temps = items.map(([_, r]) => r.avg_temperature);
-          const hums = items.map(([_, r]) => r.avg_humidity);
-
-          tempChart.data.labels = labels; tempChart.data.datasets[0].data = temps; tempChart.update();
-          humChart.data.labels = labels; humChart.data.datasets[0].data = hums; humChart.update();
-
-          const w0 = items.length ? items[0][1] : null;
-          if (w0) {
-            document.getElementById('windowRange').textContent = new Date(w0.window_start).toLocaleTimeString() + ' → ' + new Date(w0.window_end).toLocaleTimeString();
-          }
-          document.getElementById('deviceCount').textContent = labels.length;
-          if (data.updated_at) {
-            const dt = new Date(data.updated_at * 1000);
-            document.getElementById('updatedAt').textContent = 'updated ' + dt.toLocaleTimeString();
-          }
-        } catch (e) {
-          console.debug('refresh error', e);
-        }
-      }
-
-      setInterval(refresh, 2000);
-      refresh();
-    </script>
+    <!-- Auto-redirect to Steam route -->
+    <meta http-equiv="refresh" content="0; url=/steam" />
   </body>
 </html>
